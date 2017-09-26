@@ -16,7 +16,7 @@ int main(void)
 
     /* Register ISRs */
 
-    /* Initialize Timer */
+    /* Initialize Timer  Section 2.7 and 3.5*/
 
     /* Loop while processing interrupts */
     while( 1 ) 

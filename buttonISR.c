@@ -7,8 +7,9 @@
 
 #include "buttonISR.h"
 #include "altera_avalon_pio_regs.h"
-#include "key_codes.h" // specify values for KEY1, KEY2 ?do we need this?
-
+#include "key_codes.h" // specify values for KEY1, KEY2
+#include<math.h>
+#include<lcd.c>
 
 #ifdef ALT_ENHANCED_INTERRUPT_API_PRESENT
 void buttonISR(void* context)
@@ -20,16 +21,13 @@ void buttonISR(void* context, alt_u32 id)
      * volatile to avoid unwanted compiler optimization.
      */
 
-	volatileint* interval_timer_ptr = (int*) 0x10002000; // interval timer base address
-	volatileint* KEY_ptr = (int*) 0x10000050; // pushbutton KEY address
-
+	int a=97, b=98, c=99,d=48;
+	
     /* Store the value in the PUSHBUTTONS's edge capture register in *context. */
 
 	*(KEY_ptr + 2) = 0xE; /* write to the pushbutton interrupt mask register,
 						   *(KEY_ptr and * set 3 mask bits to 1 (bit 0 is Nios II reset) */
 
-	intcounter = 0x190000; // 1/(50 MHz)×(0x190000) = 33 msec
-	*(interval_timer_ptr + 1) = 0x7; // STOP = 0, START = 1, CONT = 1, ITO = 1
 
     /* Reset the PUSHBUTTONS's edge capture register. */
 
@@ -38,17 +36,37 @@ void buttonISR(void* context, alt_u32 id)
     /* Act upon the interrupt */
 
     while (KEY1 == 1)
+    {
     	*KEY_ptr = 0;
-
+    	LCD_text(a);
+    }
+    
     *KEY_ptr == 1;
-
+    
     if (KEY2 == 1)
+    {
     	*KEY_ptr = 0;
     	*interval_timer_ptr = 0;
     	*KEY_ptr = 1;
+    	LCD_text(b);
+    }
 
     if (KEY3 == 1)
+    {
+    	int decimal_number = 0, remainder, hexadecimal_number;
+    	      int count = 0;
+    	      printf("Enter a Hexadecimal Number:\t");
+    	      scanf("%d", &hexadecimal_number); 
+    	      while(hexadecimal_number > 0)
+    	      {
+    	            remainder = hexadecimal_number % 10;
+    	            decimal_number = decimal_number + remainder * pow(16, count);
+    	            hexadecimal_number = hexadecimal_number / 10;
+    	            count++;
+    	      }
+    	    	LCD_text(c);
 
+    }
 
     /*
      * Read the PIO to delay ISR exit. This is done to prevent a spurious
