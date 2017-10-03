@@ -9,9 +9,8 @@
 #include "system.h"
 #include "buttonISR.h"
 #include "altera_avalon_pio_regs.h"
-//#include "key_codes.h" // specify values for KEY1, KEY2
-#include<math.h>
 #include "lcd.h"
+#include "sys\alt_irq.h"
 
 #ifdef ALT_ENHANCED_INTERRUPT_API_PRESENT
 void buttonISR(void* context)
@@ -23,62 +22,45 @@ void buttonISR(void* context, alt_u32 id)
      * volatile to avoid unwanted compiler optimization.
      */
 
-	 /* Store the value in the PUSHBUTTONS's edge capture register in *context. */
-
-/*	*(KEY_ptr + 2) = 0xE; // write to the pushbutton interrupt mask register,
-						   *(KEY_ptr and * set 3 mask bits to 1 (bit 0 is Nios II reset) */
-
+	 /* Store the value in the PUSHBUTTONS's edge capture register (r3) in *context. */
 
     /* Reset the PUSHBUTTONS's edge capture register. */
-
-	//IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PUSHBUTTONS_BASE, 0);
 
     /* Act upon the interrupt */
 
 	alt_u8 key = IORD(PUSHBUTTONS_BASE, 3);
+
     switch (key) {
     case 1: // should never get here because it is HW to reset
     	break;
     case 2: // KEY 1 was pressed
+    	timer_setting = IORD(INTERVAL_TIMER_BASE,1);
+    	if (timer_setting(0x3)) {
+    		timer_setting = 0x7;
+    		LCD_cursor = (0,0);
+    		LCD_text("Counting..");
+    	}
+    	else {
+    		timer_setting = 0x5;
+    		LCD_cursor = (0,0);
+    		LCD_text("Stopped..");
+    	}
+    	IOWR(INTERVAL_TIMER_BASE,1,timer_setting);
     	break;
     case 4: // Key 2 was pressed
+    	*pcount = 0;
+    	HexDisplay((alt_u32)HEX3_HEX0_BASE, pCount);
+    	LCD_cursor = (0,1);
+    	LCD_text("Button 2");
     	break;
     case 8: // Key 3 was pressed
+    	toggleBCD();
+    	LCD_cursor = (0,1);
+    	LCD_text = ("Button 3");
     	break;
     default: // I have no idea how we got here
     	break;
     }
- /*   while (KEY1 == 1)
-    {
-    	*KEY_ptr = 0;
-    	LCD_text(a);
-    }
-    
-    *KEY_ptr == 1;
-    
-    if (KEY2 == 1)
-    {
-    	// Call timerISR?
-    	LCD_cursor(0, 0);
-    	LCD_text("Key 2 pressed");
-    }
-
-    if (KEY3 == 1)
-    {
-    	int decimal_number = 0, remainder, hexadecimal_number;
-    	      int count = 0;
-    	      printf("Enter a Hexadecimal Number:\t");
-    	      scanf("%d", &hexadecimal_number); 
-    	      while(hexadecimal_number > 0)
-    	      {
-    	            remainder = hexadecimal_number % 10;
-    	            decimal_number = decimal_number + remainder * pow(16, count);
-    	            hexadecimal_number = hexadecimal_number / 10;
-    	            count++;
-    	      }
-    	    	LCD_text("c");
-
-    }*/
 
     /*
      * Read the PIO to delay ISR exit. This is done to prevent a spurious

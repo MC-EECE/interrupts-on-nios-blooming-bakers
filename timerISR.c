@@ -29,14 +29,13 @@ void timerISR(void * context, alt_u32 id)
 	alt_u32* count_ptr = (alt_u32*)context;
 
 	volatile int* interval_timer_ptr = (int*) INTERVAL_TIMER_BASE; // interval timer base address
-	//olatile int* KEY_ptr = (int*) 0x10000050; // pushbutton KEY address
 
 	/* clear the interrupt */
 
 	*interval_timer_ptr = 0;
-    // IOWR(INTERVAL_TIMER_BASE, 0, 1);
 
 	/* Act upon the interrupt */
+
     *count_ptr = *count_ptr + 1;
 
 	/* Display count value 
