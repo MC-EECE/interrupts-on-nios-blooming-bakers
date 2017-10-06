@@ -36,7 +36,7 @@ void timerISR(void * context, alt_u32 id)
 
 	/* Act upon the interrupt */
 
-    *count_ptr = *count_ptr + 1;
+	*count_ptr = *count_ptr + 1;
 
 	/* Display count value 
 	 * (Is this the best place to do this? 
